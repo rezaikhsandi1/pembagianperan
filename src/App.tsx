@@ -5,7 +5,6 @@ import { User, ShieldCheck, Database, LayoutDashboard, Send, Trash2, RotateCcw, 
 interface Assignment {
   no: number;
   name: string;
-  email: string;
   role: string;
   time: string;
   status: string;
@@ -21,7 +20,6 @@ interface Status {
 export default function App() {
   const [mode, setMode] = useState<'user' | 'admin'>('user');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [response, setResponse] = useState<string | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,7 +68,7 @@ export default function App() {
       const res = await fetch('/api/assign', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name }),
       });
       const data = await res.json();
       setResponse(data.message);
@@ -173,18 +171,8 @@ export default function App() {
                       required
                     />
                   </div>
-                  <div className="relative group">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Alamat Email"
-                      className="w-full h-16 bg-white border-2 border-slate-200 rounded-2xl px-6 text-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 outline-none transition-all shadow-sm italic"
-                      required
-                    />
-                  </div>
                   <button 
-                    disabled={loading || !name.trim() || !email.trim()}
+                    disabled={loading || !name.trim()}
                     className="w-full h-16 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-200"
                   >
                     {loading ? (
@@ -331,7 +319,6 @@ export default function App() {
                       <tr className="bg-slate-50/50 text-slate-400 uppercase text-[10px] font-black tracking-widest border-b border-slate-100">
                         <th className="px-6 py-4 w-16">No</th>
                         <th className="px-6 py-4">Nama Pengisi</th>
-                        <th className="px-6 py-4">Email</th>
                         <th className="px-6 py-4">Peran yang Didapat</th>
                         <th className="px-6 py-4">Waktu</th>
                         <th className="px-6 py-4">Status</th>
@@ -343,7 +330,6 @@ export default function App() {
                         <tr key={row.no} className="hover:bg-slate-50/50 transition-colors group">
                           <td className="px-6 py-4 font-mono text-xs text-slate-400">{row.no}</td>
                           <td className="px-6 py-4 font-semibold">{row.name}</td>
-                          <td className="px-6 py-4 text-xs font-mono text-slate-500">{row.email}</td>
                           <td className="px-6 py-4">
                             <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-xs font-bold uppercase tracking-tight">
                               {row.role}
