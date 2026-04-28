@@ -27,6 +27,11 @@ let roles: Role[] = [
   { id: '14', name: 'Ahli TPPO', description: 'Menganalisis unsur perekrutan, pengangkutan, penipuan, dan penjeratan utang.', assignedTo: null, assignedAt: null },
   { id: '15', name: 'Ahli Psikologi Forensik', description: 'Menjelaskan kondisi psikologis korban yang berada dalam jeratan trauma dan keberdayaan.', assignedTo: null, assignedAt: null },
   { id: '16', name: 'Ahli Bahasa Asing/Penerjemah', description: 'Membedah forensik isi kontrak berbahasa asing untuk membuktikan tipu daya pelaku.', assignedTo: null, assignedAt: null },
+  { id: '17', name: 'Penasehat Hukum 3', description: 'Mewakili kepentingan hukum perwakilan perusahaan asing yang terkait dengan kasus ini.', assignedTo: null, assignedAt: null },
+  { id: '18', name: 'Saksi Fakta 2 (HRD)', description: 'Memberikan keterangan terkait kebijakan internal, administrasi, dan prosedur rekrutmen di perusahaan.', assignedTo: null, assignedAt: null },
+  { id: '19', name: 'Saksi a de charge 1', description: 'Saksi yang menguntungkan/meringankan kedudukan terdakwa berdasarkan fakta yang diketahui.', assignedTo: null, assignedAt: null },
+  { id: '20', name: 'Saksi a de charge 2', description: 'Saksi tambahan yang dihadirkan untuk memperkuat pembelaan terhadap dakwaan terdakwa.', assignedTo: null, assignedAt: null },
+  { id: '21', name: 'Terdakwa 2 (Bagian Rekrutmen)', description: 'Staf bagian rekrutmen dan kepegawaian yang diduga terlibat dalam proses penempatan kerja.', assignedTo: null, assignedAt: null },
 ];
 
 const app = express();
