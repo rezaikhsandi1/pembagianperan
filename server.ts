@@ -1,5 +1,4 @@
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
 import path from 'path';
 
 interface Role {
@@ -31,96 +30,97 @@ let roles: Role[] = [
   { id: '16', name: 'Ahli Bahasa Asing/Penerjemah', description: 'Membedah forensik isi kontrak berbahasa asing untuk membuktikan tipu daya pelaku.', assignedTo: null, assignedEmail: null, assignedAt: null },
 ];
 
+const app = express();
+app.use(express.json());
+
+// API Routes
+app.get('/api/roles/status', (req, res) => {
+  res.json({
+    total: roles.length,
+    assigned: roles.filter(r => r.assignedTo).length,
+    available: roles.filter(r => !r.assignedTo).length,
+    assignments: roles.map((r, index) => ({
+      no: index + 1,
+      name: r.assignedTo || '-',
+      email: r.assignedEmail || '-',
+      role: r.name,
+      time: r.assignedAt || '-',
+      status: r.assignedTo ? 'Terisi' : 'Tersedia'
+    }))
+  });
+});
+
+app.post('/api/assign', (req, res) => {
+  const { name, email } = req.body;
+  if (!name || !email) return res.status(400).json({ error: 'Nama dan Email harus diisi' });
+
+  const cleanName = name.trim();
+  const cleanEmail = email.trim().toLowerCase();
+  
+  // Check if email already assigned
+  const existing = roles.find(r => r.assignedEmail?.toLowerCase() === cleanEmail);
+  if (existing) {
+    return res.json({ 
+      type: 'existing', 
+      message: `Halo ${existing.assignedTo}, email **${cleanEmail}** sudah terdaftar dengan peran: **${existing.name}**. ${existing.description}` 
+    });
+  }
+
+  // Assign new role
+  const available = roles.filter(r => !r.assignedTo);
+  if (available.length === 0) {
+    return res.json({ 
+      type: 'full', 
+      message: `Mohon maaf ${cleanName}, semua peran sudah terisi.` 
+    });
+  }
+
+  const randomIndex = Math.floor(Math.random() * available.length);
+  const selectedRole = available[randomIndex];
+  
+  selectedRole.assignedTo = cleanName;
+  selectedRole.assignedEmail = cleanEmail;
+  selectedRole.assignedAt = new Date().toLocaleString('id-ID');
+
+  res.json({ 
+    type: 'new', 
+    message: `Halo ${cleanName}, peran Anda adalah: **${selectedRole.name}**. ${selectedRole.description}` 
+  });
+});
+
+app.post('/api/admin/roles', (req, res) => {
+  const { action, payload } = req.body;
+  console.log(`Admin action: ${action}`, payload);
+  
+  if (action === 'add') {
+    const { name, description } = payload;
+    roles.push({
+      id: Math.random().toString(36).substr(2, 9),
+      name,
+      description,
+      assignedTo: null,
+      assignedEmail: null,
+      assignedAt: null
+    });
+  } else if (action === 'delete') {
+    const { name } = payload;
+    roles = roles.filter(r => r.name !== name);
+  } else if (action === 'reset') {
+    roles.forEach(r => {
+      r.assignedTo = null;
+      r.assignedEmail = null;
+      r.assignedAt = null;
+    });
+    console.log('Roles reset successfully in-place');
+  }
+
+  res.json({ success: true });
+});
+
 async function startServer() {
-  const app = express();
-  app.use(express.json());
-
-  // API Routes
-  app.get('/api/roles/status', (req, res) => {
-    res.json({
-      total: roles.length,
-      assigned: roles.filter(r => r.assignedTo).length,
-      available: roles.filter(r => !r.assignedTo).length,
-      assignments: roles.map((r, index) => ({
-        no: index + 1,
-        name: r.assignedTo || '-',
-        email: r.assignedEmail || '-',
-        role: r.name,
-        time: r.assignedAt || '-',
-        status: r.assignedTo ? 'Terisi' : 'Tersedia'
-      }))
-    });
-  });
-
-  app.post('/api/assign', (req, res) => {
-    const { name, email } = req.body;
-    if (!name || !email) return res.status(400).json({ error: 'Nama dan Email harus diisi' });
-
-    const cleanName = name.trim();
-    const cleanEmail = email.trim().toLowerCase();
-    
-    // Check if email already assigned
-    const existing = roles.find(r => r.assignedEmail?.toLowerCase() === cleanEmail);
-    if (existing) {
-      return res.json({ 
-        type: 'existing', 
-        message: `Halo ${existing.assignedTo}, email **${cleanEmail}** sudah terdaftar dengan peran: **${existing.name}**. ${existing.description}` 
-      });
-    }
-
-    // Assign new role
-    const available = roles.filter(r => !r.assignedTo);
-    if (available.length === 0) {
-      return res.json({ 
-        type: 'full', 
-        message: `Mohon maaf ${cleanName}, semua peran sudah terisi.` 
-      });
-    }
-
-    const randomIndex = Math.floor(Math.random() * available.length);
-    const selectedRole = available[randomIndex];
-    
-    selectedRole.assignedTo = cleanName;
-    selectedRole.assignedEmail = cleanEmail;
-    selectedRole.assignedAt = new Date().toLocaleString('id-ID');
-
-    res.json({ 
-      type: 'new', 
-      message: `Halo ${cleanName}, peran Anda adalah: **${selectedRole.name}**. ${selectedRole.description}` 
-    });
-  });
-
-  app.post('/api/admin/roles', (req, res) => {
-    const { action, payload } = req.body;
-    console.log(`Admin action: ${action}`, payload);
-    
-    if (action === 'add') {
-      const { name, description } = payload;
-      roles.push({
-        id: Math.random().toString(36).substr(2, 9),
-        name,
-        description,
-        assignedTo: null,
-        assignedEmail: null,
-        assignedAt: null
-      });
-    } else if (action === 'delete') {
-      const { name } = payload;
-      roles = roles.filter(r => r.name !== name);
-    } else if (action === 'reset') {
-      roles.forEach(r => {
-        r.assignedTo = null;
-        r.assignedEmail = null;
-        r.assignedAt = null;
-      });
-      console.log('Roles reset successfully in-place');
-    }
-
-    res.json({ success: true });
-  });
-
   // Vite middleware
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
@@ -135,9 +135,13 @@ async function startServer() {
   }
 
   const PORT = 3000;
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-  });
+  if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  }
 }
 
 startServer();
+
+export default app;
