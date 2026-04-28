@@ -127,10 +127,15 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
+    // Serve static files from the dist directory in production
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
+    
+    // Handle SPA routing: redirect all non-API requests to index.html
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      if (!req.path.startsWith('/api')) {
+        res.sendFile(path.join(distPath, 'index.html'));
+      }
     });
   }
 
